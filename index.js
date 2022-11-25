@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const { query } = require('express');
 require('dotenv').config();
 
 
@@ -20,6 +21,7 @@ async function run(){
     try{
         const carCollection = client.db('swapcarsDb').collection('cars');
         const categoryCollection = client.db('swapcarsDb').collection('categories');
+        const bookingCollection = client.db('swapcarsDb').collection('bookings');
         
         // get all cars
         app.get('/cars', async(req, res) => {
@@ -40,6 +42,20 @@ async function run(){
             const query = {};
             const categories = await categoryCollection.find(query).toArray();
             res.send(categories);
+        });
+
+        // add booking
+        app.post('/bookings', async(req, res) => {
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking);
+            res.send(result);
+            console.log(result);
+        })
+        app.get('/bookings', async(req, res) => {
+            const query = {};
+            const result = await bookingCollection.find(query).toArray();
+            res.send(result);
+            console.log(result);
         })
     }
     finally{
