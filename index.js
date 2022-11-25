@@ -22,6 +22,7 @@ async function run(){
         const carCollection = client.db('swapcarsDb').collection('cars');
         const categoryCollection = client.db('swapcarsDb').collection('categories');
         const bookingCollection = client.db('swapcarsDb').collection('bookings');
+        const userCollection = client.db('swapcarsDb').collection('users');
         
         // get all cars
         app.get('/cars', async(req, res) => {
@@ -49,13 +50,20 @@ async function run(){
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking);
             res.send(result);
-            console.log(result);
         })
         app.get('/bookings', async(req, res) => {
             const query = {};
             const result = await bookingCollection.find(query).toArray();
             res.send(result);
             console.log(result);
+        });
+
+        // add users
+        app.post('/users', async(req, res) => {
+            const user = req.body;
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+            console.log(result)
         })
     }
     finally{
