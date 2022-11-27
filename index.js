@@ -57,13 +57,14 @@ async function run(){
             next();
         }
 
-
         // get all cars
         app.get('/cars', async(req, res) => {
             const query = {};
             const cars = await carCollection.find(query).toArray();
             res.send(cars);
         })
+
+
         // get car info by id
         app.get('/categories/:id', async(req, res) => {
             const id = req.params.id;
@@ -86,6 +87,7 @@ async function run(){
             res.send(result);
         })
 
+
         // get specific booking by email
         app.get('/bookings', verifyJWT, async(req, res) => {
             const email = req.query.email;
@@ -101,6 +103,7 @@ async function run(){
             // console.log(result);
 
         });
+
 
         // JWT
         app.get('/jwt', async(req, res) => {
@@ -124,6 +127,24 @@ async function run(){
             const query = {email};
             const user = await userCollection.findOne(query);
             res.send({isAdmin: user?.role === 'admin'});
+        })
+
+
+        // get seller
+        app.get('/users/seller/:email', async(req, res) => {
+            const email = req.params.email;
+            const query = {email};
+            const seller = await userCollection.findOne(query);
+            res.send({isSeller: seller?.type === 'Seller'});
+        })
+
+
+        // get buyer
+        app.get('/users/taker/:email', async(req, res) => {
+            const email = req.params.email
+            const query = {email}
+            const user = await userCollection.findOne(query)
+            res.send({isTaker: user?.type === 'Buyer'})
         })
 
 
@@ -160,7 +181,7 @@ async function run(){
         })
 
 
-        // get sellers
+        // get sellers info
         app.get('/allsellers', async(req, res) => {
             const filter = {type: 'Seller'};
             const sellers = await userCollection.find(filter).toArray();
@@ -168,7 +189,7 @@ async function run(){
         })
 
 
-        // get buyers
+        // get buyers info
         app.get('/allbuyers', async(req, res) => {
             const filter = {type: 'Buyer'};
             const buyers = await userCollection.find(filter).toArray();
