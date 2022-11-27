@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { query } = require('express');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -45,6 +45,19 @@ async function run(){
         const bookingCollection = client.db('swapcarsDb').collection('bookings');
         const userCollection = client.db('swapcarsDb').collection('users');
         
+        // verify admin
+        const verifyAdmin = async(req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = {email: decodedEmail};
+            const user = await userCollection.findOne(query);
+
+            if(user?.role !== 'admin'){
+                return res.status(403).send({message: 'forbidden'});
+            }
+            next();
+        }
+
+
         // get all cars
         app.get('/cars', async(req, res) => {
             const query = {};
@@ -73,11 +86,12 @@ async function run(){
             res.send(result);
         })
 
-        // get specific booking
+        // get specific booking by email
         app.get('/bookings', verifyJWT, async(req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
-            if(!decodedEmail){
+
+            if(email !== decodedEmail){
                 return res.status(403).send({message: 'forbidden access'});
             }
            
@@ -85,20 +99,50 @@ async function run(){
             const result = await bookingCollection.find(query).toArray();
             res.send(result);
             // console.log(result);
+
         });
 
         // JWT
         app.get('/jwt', async(req, res) => {
+            
             const email = req.query.email;
             const query = {email: email};
             const user = await userCollection.findOne(query);
+
             if(user){
                 const token = jwt.sign({email}, process.env.ACCESS_TOKEN, {expiresIn: '1h'})
                 return res.send({accessToken: token});
             }
             res.status(403).send({accessToken: ''});
+
         })
 
+
+        // get admin
+        app.get('/users/admin/:email', async(req, res) => {
+            const email = req.params.email;
+            const query = {email};
+            const user = await userCollection.findOne(query);
+            res.send({isAdmin: user?.role === 'admin'});
+        })
+
+
+        // make admin
+        app.put('/users/admin/:id', verifyJWT, verifyAdmin, async(req, res) => {
+
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const options = {upsert: true};
+            const updatedDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+        
         // add users
         app.post('/users', async(req, res) => {
             const user = req.body;
@@ -106,6 +150,40 @@ async function run(){
             res.send(result);
             // console.log(result)
         })
+
+
+        // get all users
+        app.get('/users', async(req, res) => {
+            const query = {};
+            const users = await userCollection.find(query).toArray();
+            res.send(users);
+        })
+
+
+        // get sellers
+        app.get('/allsellers', async(req, res) => {
+            const filter = {type: 'Seller'};
+            const sellers = await userCollection.find(filter).toArray();
+            res.send(sellers);
+        })
+
+
+        // get buyers
+        app.get('/allbuyers', async(req, res) => {
+            const filter = {type: 'Buyer'};
+            const buyers = await userCollection.find(filter).toArray();
+            res.send(buyers);
+        })
+
+        
+        // delete user
+        app.delete('/users/:id', verifyJWT, verifyAdmin, async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await userCollection.deleteOne(filter);
+            res.send(result)
+        })
+
     }
     finally{
 
