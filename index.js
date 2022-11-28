@@ -65,6 +65,40 @@ async function run(){
         })
 
 
+        // car add to car collection
+        app.post('/cars', async(req, res) => {
+            const car = req.body;
+            const result = await carCollection.insertOne(car);
+            res.send(result);
+        })
+
+        
+        // get seller product by email
+        app.get('/sellercar', async(req, res) => {
+            const email = req.query.email;
+            const query = {email};
+            const result = await carCollection.find(query).toArray();
+            res.send(result)
+        })
+
+
+         // make advertise
+         app.put('/cars/advertise/:id',  async(req, res) => {
+
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const options = {upsert: true};
+            const updatedDoc = {
+                $set: {
+                    item_status: 'advertise'
+                }
+            }
+            const result = await carCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+
+
         // get car info by id
         app.get('/categories/:id', async(req, res) => {
             const id = req.params.id;
@@ -72,6 +106,7 @@ async function run(){
             const cars = await carCollection.find(query).toArray();
             res.send(cars);
         })
+
 
         // get all cars
         app.get('/categories', async(req, res) => {
