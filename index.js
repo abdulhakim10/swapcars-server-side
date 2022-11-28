@@ -57,6 +57,19 @@ async function run(){
             next();
         }
 
+
+        // verify Seller
+        const verifySeller = async(req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = {email: decodedEmail};
+            const user = await userCollection.findOne(query);
+
+            if(user?.type !== 'Seller'){
+                return res.status(403).send({message: 'forbidden'});
+            }
+            next();
+        }
+
         // get all cars
         app.get('/cars', async(req, res) => {
             const query = {};
@@ -104,6 +117,16 @@ async function run(){
             const result = await carCollection.find(query).toArray();
             res.send(result);
         })
+
+
+        // delete seller product
+        app.delete('/cars/:id', verifyJWT, verifySeller, async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await carCollection.deleteOne(filter);
+            res.send(result)
+        })
+
 
         // get car info by id
         app.get('/categories/:id', async(req, res) => {
