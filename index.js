@@ -75,7 +75,7 @@ async function run(){
         
         // get seller product by email
         app.get('/sellercar', async(req, res) => {
-            const email = req.query.email;
+            const email = req.query.email;          
             const query = {email};
             const result = await carCollection.find(query).toArray();
             res.send(result)
@@ -98,6 +98,12 @@ async function run(){
         })
 
 
+        // get advertised items
+        app.get('/advertised', async(req, res) => {
+            const query = {item_status: 'advertise'};
+            const result = await carCollection.find(query).toArray();
+            res.send(result);
+        })
 
         // get car info by id
         app.get('/categories/:id', async(req, res) => {
@@ -209,7 +215,7 @@ async function run(){
 
 
         // get all users
-        app.get('/users', async(req, res) => {
+        app.get('/users',verifyJWT, verifyAdmin, async(req, res) => {
             const query = {};
             const users = await userCollection.find(query).toArray();
             res.send(users);
@@ -217,7 +223,7 @@ async function run(){
 
 
         // get sellers info
-        app.get('/allsellers', async(req, res) => {
+        app.get('/allsellers',verifyJWT,verifyAdmin, async(req, res) => {
             const filter = {type: 'Seller'};
             const sellers = await userCollection.find(filter).toArray();
             res.send(sellers);
@@ -225,7 +231,7 @@ async function run(){
 
 
         // get buyers info
-        app.get('/allbuyers', async(req, res) => {
+        app.get('/allbuyers', verifyJWT, verifyAdmin, async(req, res) => {
             const filter = {type: 'Buyer'};
             const buyers = await userCollection.find(filter).toArray();
             res.send(buyers);
