@@ -111,10 +111,26 @@ async function run(){
         })
 
 
+         // remove advertise
+         app.put('/cars/removeadvertise/:id',  async(req, res) => {
+
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const options = {upsert: true};
+            const updatedDoc = {
+                $set: {
+                    item_status: 'none'
+                }
+            }
+            const result = await carCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+
         // get advertised items
         app.get('/advertised', async(req, res) => {
             const query = {item_status: 'advertise'};
-            const result = await carCollection.find(query).toArray();
+            const result = await carCollection.find(query).limit(3).toArray();
             res.send(result);
         })
 
@@ -245,8 +261,26 @@ async function run(){
         })
 
 
+        // verified seller
+        app.put('/vrifiedseller', verifyJWT, verifyAdmin, async(req, res) => {
+            const email = req.query.email;
+            const filter = {email};
+            const options = {upsert: true};
+            const updatedDoc = {
+                $set: {
+                    status: 'verified'
+                }
+            };
+
+            const result = await userCollection.updateOne(filter, updatedDoc, options);
+            const result1 = await carCollection.updateMany(filter, updatedDoc, options);
+            res.send({result, result1});
+
+        })
+
+
         // get sellers info
-        app.get('/allsellers',verifyJWT,verifyAdmin, async(req, res) => {
+        app.get('/allsellers',verifyJWT, verifyAdmin, async(req, res) => {
             const filter = {type: 'Seller'};
             const sellers = await userCollection.find(filter).toArray();
             res.send(sellers);
