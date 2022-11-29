@@ -192,7 +192,15 @@ async function run(){
             res.send(result);
         })
 
-        
+        // delete wishlist
+        app.delete('/wishlist/:id', async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await wishCollection.deleteOne(filter);
+            res.send(result)
+        })
+
+
         // remove wishlist
         // app.put('/cars/removewishlist/:id',  async(req, res) => {
 
@@ -216,6 +224,15 @@ async function run(){
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking);
             res.send(result);
+        })
+
+
+        // delete booking
+        app.delete('/bookings/:id', async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await bookingCollection.deleteOne(filter);
+            res.send(result)
         })
 
 
