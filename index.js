@@ -44,6 +44,7 @@ async function run(){
         const categoryCollection = client.db('swapcarsDb').collection('categories');
         const bookingCollection = client.db('swapcarsDb').collection('bookings');
         const userCollection = client.db('swapcarsDb').collection('users');
+        const wishCollection = client.db('swapcarsDb').collection('wishlist');
         
         // verify admin
         const verifyAdmin = async(req, res, next) => {
@@ -159,6 +160,56 @@ async function run(){
             const categories = await categoryCollection.find(query).toArray();
             res.send(categories);
         });
+
+
+        // add wishlist
+        // app.put('/cars/wishlist/:id',  async(req, res) => {
+
+        //     const id = req.params.id;
+        //     const filter = {_id: ObjectId(id)};
+        //     const options = {upsert: true};
+        //     const updatedDoc = {
+        //         $set: {
+        //             wish: 'listed'
+        //         }
+        //     }
+        //     const result = await carCollection.updateOne(filter, updatedDoc, options);
+        //     res.send(result);
+        // })
+
+        // add wish list
+        app.post('/wishlist', async(req, res) => {
+            const wishItem = req.body;
+            const result = await wishCollection.insertOne(wishItem);
+            res.send(result);
+        })
+
+        // get wishlist
+        app.get('/wishlist', async(req, res) => {
+            const email = req.query.email;
+            const query = {email};
+            const result = await wishCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        
+        // remove wishlist
+        // app.put('/cars/removewishlist/:id',  async(req, res) => {
+
+        //     const id = req.params.id;
+        //     const filter = {_id: ObjectId(id)};
+        //     const options = {upsert: true};
+        //     const updatedDoc = {
+        //         $set: {
+        //             wish: 'unlisted'
+        //         }
+        //     }
+        //     const result = await carCollection.updateOne(filter, updatedDoc, options);
+        //     res.send(result);
+        // })
+
+
+
 
         // add booking
         app.post('/bookings',  async(req, res) => {
